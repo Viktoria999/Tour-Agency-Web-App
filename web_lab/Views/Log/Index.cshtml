@@ -1,0 +1,180 @@
+﻿@using Web_lab.Models
+@model LogFilterModel
+
+<style>
+	.tab-content {
+		display: none;
+	}
+
+	#logs-tab-button:checked ~ #content-1,
+	#report-tab-button:checked ~ #content-2{
+		display: block;
+	}
+</style>
+
+<div class="row">
+	<div class="col col-md-12">
+		<br />
+		<h1 class="center">Логи</h1>
+	</div>
+</div>
+<hr />
+<br>
+<div class="tab">
+	<input checked id="logs-tab-button" name="tab-btn" type="radio" value="">
+	<label for="logs-tab-button">Логи</label>
+	<input id="report-tab-button" name="tab-btn" type="radio" value="">
+	<label for="report-tab-button">Отчёт</label>
+	<div class="tab-content" id="content-1">
+		<div class="row">
+			<div class="col-12 col-md-2 mb-3">
+				<div class="row">
+					<div class="col-12">
+						<h2 class="center">Фильтры</h2>
+						<form method="get">
+							<div class="form-group mb-1">
+								@Html.LabelFor(m => m.UserName, htmlAttributes: new { @class = "control-label" })
+								@Html.TextBoxFor(m => m.UserName, new { @class = "form-control", placeholder = "Имя пользователя" })
+								@Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+							</div>
+
+							<div class="form-group mb-1">
+								@Html.LabelFor(m => m.Level, htmlAttributes: new { @class = "control-label" })
+								@Html.DropDownListFor(x => x.Level, Model.LevelList, "Выберите уровень логирования", new { @class = "form-control" })
+								@Html.ValidationMessageFor(m => m.Level, "", new { @class = "text-danger" })
+							</div>
+
+							<div class="form-group mb-1">
+								@Html.LabelFor(m => m.TimeFrom, htmlAttributes: new { @class = "control-label" })
+								@Html.TextBoxFor(model => model.TimeFrom, new { @type = "date", @class = "form-control" })
+								@Html.ValidationMessageFor(m => m.TimeFrom, "", new { @class = "text-danger" })
+							</div>
+
+							<div class="form-group mb-1">
+								@Html.LabelFor(m => m.TimeTo, htmlAttributes: new { @class = "control-label" })
+								@Html.TextBoxFor(model => model.TimeTo, new { @type = "date", @class = "form-control" })
+								@Html.ValidationMessageFor(m => m.TimeTo, "", new { @class = "text-danger" })
+							</div>
+
+							<button type="submit" class="btn btn-outline-primary mt-3" id="applyLogFilters">Применить фильтры</button>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-10 mb-3">
+				<div class="row">
+					<table id="logsDataTable" class="table table">
+						<thead>
+							<tr>
+								<th scope="col">ID</th>
+								<th scope="col">Страница</th>
+								<th scope="col">Сообщение</th>
+								<th scope="col">Время</th>
+								<th scope="col">Имя пользователя</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tab-content" id="content-2">
+		<div class="col-12 col-md-10 mb-3">
+			<div class="row">
+				<table id="logReportTable" class="table table">
+					<thead>
+						<tr>
+							<th scope="col">№</th>
+							<th scope="col">Страница</th>
+							<th scope="col">Количество посещений</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$("#applyLogFilters").on('click', function (event) {
+		event.preventDefault();
+
+		var filterData = {
+			UserName: $('#UserName').val(),
+			Level: $('#Level').val(),
+			TimeFrom: $('#TimeFrom').val(),
+			TimeTo: $('#TimeTo').val()
+		};
+
+		$.ajax({
+			url: '@Url.Action("GetLogs", "Log")', 
+			method: 'GET',
+			data: filterData,
+			dataType: 'json',
+			success: function (data) {
+				if (data.state == 0){
+					$('#logsDataTable tbody').empty();
+
+					data.logs.forEach(function (item) {
+						var date = new Date(item.logTime);
+						var formattedTimestamp = date.toISOString().replace('T', ' ').split('.')[0];
+
+						var row = '<tr>' +
+							'<td>' + item.id + '</td>' +
+							'<td>' + item.controller + '/' + item.action + '</td>' +
+							'<td>' + item.level + ': ' + item.message + '</td>' +
+							'<td>' + formattedTimestamp + '</td>' +
+							'<td>' + item.userName + '</td>' +
+							'</tr>';
+						$('#logsDataTable tbody').append(row);
+					});
+				}
+				else if (data.state == 1){
+					$('#logsDataTable tbody').empty();
+
+					alert(data.message);
+				}
+			},
+			error: function (xhr, status, error) {
+				console.error('Error fetching data:', error);
+			}
+		});
+	});
+
+	$('#report-tab-button').change(function () {
+		if ($(this).is(':checked')) {
+			$.ajax({
+				url: '@Url.Action("GetReport", "Log")',
+				method: 'GET',
+				dataType: 'json',
+				success: function (data) {
+					if (data.state == 0) {
+						$('#logReportTable tbody').empty();
+
+						var rating = 1;
+						data.report.forEach(function (item) {
+							var row = '<tr>' +
+								'<td>' + rating + '</td>' +
+								'<td>' + item.controller + '/' + item.action + '</td>' +
+								'<td>' + item.requestCount + '</td>' +
+								'</tr>';
+							$('#logReportTable tbody').append(row);
+							rating++;
+						});
+					} else if (data.state == 1) {
+						$('#logReportTable tbody').empty();
+						alert(data.message);
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Error fetching data:', error);
+				}
+			}); 
+		} 
+	});
+
+</script>
