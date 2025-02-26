@@ -1,0 +1,203 @@
+﻿@using Web_lab.Models
+@model web_lab.Models.CatalogFilterModel
+
+@{
+	var IsAuthenticated = Context.Items["IsAuthenticated"] != null && (bool)Context.Items["IsAuthenticated"];
+	var UserName = Context.Items["UserName"]?.ToString() ?? "Undefined";
+	var IsAdmin = Context.Items["IsAdmin"] != null && (bool)Context.Items["IsAdmin"];
+}
+
+<style>
+	.catalog-item {
+		border: 2px solid transparent;
+		transition: border-color 0.3s;
+	}
+
+		.catalog-item.selected {
+			border-color: blue;
+		}
+</style>
+
+<div class="row">
+	<div class="col-12 col-md-12">
+		<br>
+		<h1 class="center">Каталог туров</h1>
+	</div>
+
+
+</div>
+
+<hr>
+<br>
+
+<div class="row">
+	<div class="col-12 col-md-3 mb-3">
+		<div class="row">
+			<div class="col-12">
+				<h2 class="center">Фильтр</h2>
+				<form method="get">
+					<div class="mb-2">
+						<label for="City">Курортный город:</label>
+						@Html.DropDownListFor(x => x.City, Model.CitiesList, "Выберите город", new { @class = "form-control dropdown mb-1" })
+					</div>
+					<div class="mb-2">
+						<label for="StarRating">Количество звёзд:</label>
+						@Html.TextBoxFor(x => x.StarRating, "Введите количество звёзд", new { @class = "form-control", @type = "number", @min = 1, @max = 5})
+					</div>
+					<div class="mb-2">
+						<label for="BeachType">Тип пляжа:</label>
+						@Html.DropDownListFor(x => x.BeachType, Model.BeachTypesList, "Выберите тип пляжа", new { @class = "form-control dropdown mb-1" })
+					</div>
+					<div class="mb-2">
+						<label for="IsAllInclusive">Опция "Всё включено":</label>
+						@Html.CheckBoxFor(x => x.IsAllInclusive)
+					</div>
+					<button class="btn btn-outline-secondary mt-3" id="clearFilters">Очистить фильтр</button>
+					<button type="submit" class="btn btn-outline-primary mt-3" id="applyFilters">Применить фильтр</button>
+				</form>
+			</div>
+			@if (IsAdmin)
+			{
+				<div class="col-12" id="admin-panel">
+					<h2 class="center mt-5 mb-4">Действия</h2>
+
+					<a href='@Url.Action("InsertGet","Catalog")' class="btn btn-outline-secondary mb-3 mt-1" id="createItem" style="width: 100%">Создать</a><br />
+					<a href='#' class="btn btn-outline-secondary mb-3" id="editItem" style="width: 100%">Изменить</a><br />
+					<a href='#' class="btn btn-outline-secondary mb-3" id="deleteItem" style="width: 100%">Удалить</a><br />
+				</div>
+			}
+		</div>
+	</div>
+	<div class="col-12 col-md-9 mb-3">
+		<div class="row" id="catalogItemsContainer"></div>
+	</div>
+</div>
+
+<br>
+<hr>
+
+
+
+
+<script>
+	var selectedItemId = null;
+
+	function handleCatalogItemClick(event) {
+		document.querySelectorAll('.catalog-item').forEach(function (item) {
+			item.classList.remove('selected');
+		});
+
+		event.target.classList.add('selected');
+
+		selectedItemId = event.target.getAttribute('data-item-id');
+
+		console.log('Selected Item ID:', selectedItemId);
+	}
+
+	$(document).ready(function () {
+
+		clearFilter();
+		$('#applyFilters').on('click', function (event) {
+			event.preventDefault();
+
+			var filter = {
+				City: $('#City').val(),
+				StarRating: $('#StarRating').val(),
+				BeachType: $('#BeachType').val(),
+				IsAllInclusive: $('#IsAllInclusive').prop('checked'),
+				IsClearFilter: false
+			};
+
+			getItems(filter);
+		});
+	});
+
+	$('#catalogItemsContainer').on('click', '.catalog-item', handleCatalogItemClick);
+
+	$("#editItem").on('click', function (event) {
+		event.preventDefault();
+		var itemId = selectedItemId;
+		if (itemId == null) {
+			alert("Выберите элемент каталога. Чтобы выбрать элемент - нажмите по элементу ЛКМ.");
+			return;
+		}
+
+		var url = '@Url.Action("EditGet", "Catalog")' + '?itemId=' + itemId;
+		window.location.href = url;
+	});
+
+	$("#deleteItem").on('click', function (event) {
+		event.preventDefault();
+		var itemId = selectedItemId;
+		if (itemId == null) {
+			alert("Выберите элемент каталога. Чтобы выбрать элемент - нажмите по элементу ЛКМ.");
+			return;
+		}
+
+		var url = '@Url.Action("Delete", "Catalog")';
+
+		if (confirm('Вы уверены, что хотите удалить элемент каталога?')) {
+			$.ajax({
+				url: url,
+				type: 'DELETE',
+				data: { itemId: itemId },
+				dataType: 'json',
+				success: function (response) {
+					if (response.success) {
+						alert('Элемент каталога успешно удалён.');
+						window.location.href = '@Url.Action("Index", "Catalog")';
+					} else {
+						alert('Ошибка при удалении элемента каталога.');
+					}
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					console.error('Ошибка:', textStatus, errorThrown);
+				}
+			});
+		}
+	});
+
+	function clearFilter() {
+		var filter = {
+			IsClearFilter: true
+		};
+		getItems(filter);
+	}
+
+	function getItems(filter) {
+		$('#catalogItemsContainer').empty();
+
+		$.ajax({
+			url: '/Catalog/GetItems/',
+			type: 'GET',
+			data: filter,
+			dataType: 'json',
+			success: function (data) {
+				if (data) {
+					data.forEach(function (item) {
+						$('#catalogItemsContainer').append(`
+																<div class="row mb-3">
+																	<div class="col-12 col-md-4">
+																		<div class="img-container">
+																			<img src="${item.url}" class="img catalog-item" data-item-id="${item.id}" alt="${item.name}">
+																		</div>
+																	</div>
+																	<div class="col-12 col-md-8">
+																		<h3>${item.name}</h3>
+																		<p>${item.description}</p>
+																	</div>
+																</div>
+													`);
+					});
+				}
+				else {
+					$('#catalogItemsContainer').append('<p>Нет элементов для отображения</p>');
+				}
+			},
+			error: function (jqXHR, textStatus, errorThrown) {
+				console.error('Ошибка:', textStatus, errorThrown);
+				$('#catalogItemsContainer').append('<p>Ошибка загрузки элементов каталога</p>');
+			}
+		});
+	}
+</script>

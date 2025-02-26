@@ -1,0 +1,223 @@
+.center {
+    text-align: center;
+}
+
+.right {
+    text-align: right;
+}
+
+.justify {
+    text-align: justify;
+}
+
+.img-size{
+    height: 400px;
+    object-fit: cover;
+}
+
+.logo-size{
+    width: 40px;
+    height: 40px;
+    object-fit: fill;
+}
+.header-size{
+    height: 80px;
+}
+
+table{
+    font-size: larger;
+}
+
+.img-container {
+    position: relative;
+    width: 100%;
+    padding-top: 75%; 
+    overflow: hidden;
+}
+
+    .img-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.modal-backdrop {
+    position: fixed !important;
+}
+
+/* Вкладки */
+.tab {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+    .tab > input[type="radio"] {
+        display: none;
+    }
+
+.tab-content {
+    display: none;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.tab > label {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    cursor: pointer;
+    transition: color .15s ease-in-out, border-color .15s ease-in-out;
+    color: #0d6efd;
+    background: 0 0;
+    border-bottom: 0.125rem solid transparent;
+}
+
+    .tab > label:hover {
+        border-bottom-color: #0d6efd;
+    }
+
+.tab > input[type="radio"]:checked + label {
+    cursor: default;
+    font-weight: bold;
+    color: #212529;
+    border-bottom-color: #212529;
+}
+
+/*Обычная тема*/
+
+body {
+    background-color: #fff;
+    color: #000000;
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+    margin: 0; 
+}
+
+.wrapper {
+    flex-grow: 1; 
+}
+
+footer {
+    background-color: #0582ca;
+    margin: 0;
+    padding: 1rem 0;
+}
+
+header {
+    background-color: #0582ca;
+}
+
+.modal-footer {
+    background-color: #0582ca;
+}
+
+.modal-header {
+    background-color: #0582ca;
+}
+
+hr {
+    color: #000000;
+}
+
+p {
+    font-size: larger;
+}
+
+.verticalLine {
+    border-left: thin solid;
+}
+
+.bottomLine {
+    border-bottom: thin solid;
+}
+
+/*Тёмная тема*/
+
+body.dark-theme {
+    background-color: #051923;
+    color: #fff;
+}
+
+    body.dark-theme footer {
+        background-color: #003554;
+    }
+
+    body.dark-theme header {
+        background-color: #003554;
+    }
+
+    body.dark-theme .modal-footer {
+        background-color: #003554;
+    }
+
+    body.dark-theme .modal-header {
+        background-color: #003554;
+    }
+
+    body.dark-theme .modal-body {
+        background-color: #003554;
+    }
+
+    body.dark-theme hr {
+        background-color: #003554;
+    }
+
+    body.dark-theme .bottomLine {
+        border-color: #051923;
+    }
+
+    body.dark-theme .verticalLine {
+        border-color: #051923;
+    }
+
+    body.dark-theme checkbox {
+        background-color: #003554;
+        color: #fff;
+    }
+
+    body.dark-theme option {
+        background-color: #003554;
+        color: #fff;
+    }
+
+    body.dark-theme select {
+        background-color: #003554;
+        color: #fff;
+    }
+
+    body.dark-theme input {
+        background-color: #003554;
+        color: #fff;
+    }
+
+        body.dark-theme input:focus {
+            background-color: #3a629e;
+            color: #fff;
+            border-color: #5bc0de;
+            outline: none;
+        }
+
+        body.dark-theme input.active {
+            background-color: #2c4875;
+            color: #fff;
+        }
+
+            body.dark-theme input.active:focus {
+                background-color: #3a629e;
+                color: #fff;
+                border-color: #5bc0de;
+                outline: none;
+            }
+
+    body.dark-theme .card {
+        background-color: #003554;
+    }
+
+    body.dark-theme table {
+        color: #fff;
+    }
+

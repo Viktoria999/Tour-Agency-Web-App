@@ -1,0 +1,116 @@
+﻿@using Web_lab.Models
+@model CatalogItemEditGetModel
+
+<style>
+	.input-file {
+		opacity: 0;
+		overflow: hidden;
+		position: absolute;
+	}
+
+	#labelFile {
+		cursor: pointer;
+	}
+
+	#File-error {
+		position: absolute;
+		top: 0px;
+		color: red;
+	}
+</style>
+
+<div claclass="row">
+	<div class="col">
+		<h2 class="center">Редактирование элемента каталога</h2>
+		@using (Html.BeginForm("EditPost", "Catalog", FormMethod.Post, new { id = "catalogEditForm" }))
+		{
+			<div class="form-group mb-1">
+				<label for="Name">Название:</label>
+				@Html.TextBoxFor(x => x.Name, new { @class = "form-control mb-1", type = "text" })
+			</div>
+
+			<div class="form-group mb-1">
+				<label for="Description">Описание:</label>
+				@Html.TextBoxFor(x => x.Description, new { @class = "form-control mb-1", type = "text" })
+			</div>
+
+			<div class="form-group mb-1">
+				<label for="City">Город:</label>
+				@Html.DropDownListFor(x => x.City, Model.CitiesList, "Выберите город", new { @class = "form-control dropdown mb-1" })
+			</div>
+
+			<div class="form-group mb-1">
+				<label for="BeachType">Тип пляжа:</label>
+				@Html.DropDownListFor(x => x.BeachType, Model.BeachTypesList, "Выберите тип пляжа", new { @class = "form-control dropdown mb-1" })
+			</div>
+
+			<div class="form-group mb-1">
+				<label for="StarRating">Рейтинг:</label>
+				@Html.EditorFor(x => x.StarRating, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1", max = "5", step = "1" } })
+			</div>
+
+			<div class="form-group mb-1">
+				<label for="IsAllInclusive">Всё включено:</label>
+				@Html.CheckBoxFor(x => x.IsAllInclusive, new { @class = "form-check-input" })
+			</div>
+
+			<div class="form-group mb-5">
+				<input type="file" name="File" id="File" class="input-file" accept="image/jpeg,image/png,image/bmp" style="width: 1%">
+				<label for="File" id="labelFile" class="btn btn-outline-primary btn-lg">
+					<i class="fa fa-upload"></i>
+					<span>Загрузить изображение</span>
+				</label>
+			</div>
+
+			<div class="form-group mb-3">
+				<button type="submit" class="btn btn-outline-primary" id="editCatalogItem">Создать</button>
+			</div>
+		}
+	</div>
+</div>
+
+<script>
+	$("#editCatalogItem").on('click', function (event) {
+		event.preventDefault();
+
+		var fileUpload = $("#File").get(0);
+		var files = fileUpload.files;
+
+		var fileData = new FormData();
+
+		fileData.append('Id', '@Model.Id');
+		fileData.append('Name', $('#Name').val());
+		fileData.append('Description', $('#Description').val());
+		fileData.append('City', $('#City').val());
+		fileData.append('StarRating', $('#StarRating').val());
+		fileData.append('BeachType', $('#BeachType').val());
+		fileData.append('IsAllInclusive', $('#IsAllInclusive').prop('checked'));
+		for (var i = 0; i < files.length; i++) {
+			fileData.append('Image', files[i]);
+		}
+
+		var url = '/Catalog/EditPost';
+
+		$.ajax({
+			url: url,
+			type: "POST",
+			contentType: false,
+			processData: false,
+			data: fileData,
+			success: function (response) {
+				if (response.success) {
+					alert("Элемент успешно обновлен.");
+				} else {
+					alert("Произошла ошибка.");
+				}
+			},
+			error: function (jqXHR) {
+				if (jqXHR.status == 403) {
+					alert('Вы не авторизованы');
+				}
+			},
+		}).fail(function (xhr, status, p3) {
+			alert(xhr.responseText);
+		});
+	});
+</script>

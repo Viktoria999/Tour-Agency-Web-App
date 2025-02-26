@@ -1,0 +1,95 @@
+﻿@using Web_lab.Models
+@model EditProfileUserRequest
+
+<div class="modal fade" id="modalEditProfile" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 class="modal-title center text-light text-decoration-none" id="staticBackdropLabel">Редактировать профиль</h3>
+				<button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x"></i></button>
+			</div>
+			<div class="modal-body">
+				<div class="container">
+					<div claclass="row">
+						<div class="col">
+							@using (Html.BeginForm("EditProfile", "Auth", FormMethod.Post))
+							{
+								<div class="form-group mb-1">
+									@Html.LabelFor(m => m.UserName, htmlAttributes: new { @class = "control-label" })
+									@Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @readonly = true })
+									@Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+								</div>
+								
+								<div class="form-group mb-1">
+									@Html.LabelFor(m => m.FirstName, htmlAttributes: new { @class = "control-label" })
+									@Html.TextBoxFor(m => m.FirstName, new { @class = "form-control", placeholder = "Введите имя" })
+									@Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+								</div>
+
+								<div class="form-group mb-1">
+									@Html.LabelFor(m => m.LastName, htmlAttributes: new { @class = "control-label" })
+									@Html.TextBoxFor(m => m.LastName, new { @class = "form-control", placeholder = "Введите фамилию" })
+									@Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+								</div>
+
+								<div class="form-group mb-1">
+									@Html.LabelFor(m => m.MiddleName, htmlAttributes: new { @class = "control-label" })
+									@Html.TextBoxFor(m => m.MiddleName, new { @class = "form-control", placeholder = "Введите отчество (при наличии)" })
+									@Html.ValidationMessageFor(m => m.MiddleName, "", new { @class = "text-danger" })
+								</div>
+
+								<div class="form-group mb-3">
+									@Html.LabelFor(m => m.Email, htmlAttributes: new { @class = "control-label" })
+									@Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Введите адрес электронной почты" })
+									@Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+								</div>
+
+								<div class="form-group mb-3">
+									<button type="submit" class="btn btn-outline-primary" id="editProfile">Подтвердить изменения</button>
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Назад</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$("#editProfile").on('click', function (event) {
+		event.preventDefault();
+		var requestData = {
+			Id: '@Model.Id',
+			UserName: $("#UserName").val(),
+			Password: $("#Password").val(),
+			FirstName: $("#FirstName").val(),
+			LastName: $("#LastName").val(),
+			MiddleName: $("#MiddleName").val(),
+			Email: $("#Email").val(),
+		}
+
+		$.ajax({
+			url: '/Auth/EditProfile',
+			type: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify(requestData),
+			success: function (response) {
+				console.log(response);
+				if (response.success) {
+					alert('Данные профиля успешно изменены!');
+					location.reload();
+				}
+				else {
+					alert('При попытке редактирования профиля произошла ошибка: ' + response.message);
+				}
+			},
+			error: function (xhr, status, error) {
+				console.error("Error during profile editting: " + error);
+			}
+		});
+	});
+</script>
